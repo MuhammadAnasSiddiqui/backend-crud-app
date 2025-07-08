@@ -32,11 +32,41 @@ const createPost = async (req, res) => {
   }
 };
 
+const updatePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    console.log("🚀 ~ updatePost ~ post:", post);
+    if (!post) {
+      return res.status(404).json({
+        status: false,
+        data: null,
+        message: "post not found",
+      });
+    }
+    const { title, description } = req.body;
+    post.title = title || post.title;
+    post.description = description || post.description;
+    await post.save();
+
+    res.status(201).json({
+      status: true,
+      message: "post updated successfully",
+    });
+  } catch (error) {
+    console.log("🚀 ~ createPostController ~ error:", error);
+    res.status(500).json({
+      status: false,
+      data: null,
+      message: error.message,
+    });
+  }
+};
+
 const fetchPosts = async (req, res) => {
   try {
     const posts = await Post.find({});
 
-    res.status(201).json({
+    res.status(200).json({
       status: true,
       data: posts,
       message: "Fetch all posts",
@@ -51,11 +81,38 @@ const fetchPosts = async (req, res) => {
   }
 };
 
+const getSinglePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({
+        status: false,
+        data: null,
+        message: "post not found",
+      });
+    }
+    res.status(200).json({
+      status: true,
+      data: post,
+      message: "Post fetched successfully",
+    });
+  } catch (error) {
+    console.log("🚀 ~ getSinglePost ~ error:", error);
+    res.status(500).json({
+      status: false,
+      data: null,
+      message: error.message,
+    });
+  }
+};
+
 const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
 
     const post = await Post.findOne({ _id: id });
+    console.log("🚀 ~ deletePost ~ post:", post);
+
     if (!post) {
       return res.status(400).json({
         status: false,
@@ -68,7 +125,6 @@ const deletePost = async (req, res) => {
 
     res.status(201).json({
       status: true,
-      data: deletePost,
       message: "post deleted",
     });
   } catch (error) {
@@ -81,4 +137,4 @@ const deletePost = async (req, res) => {
   }
 };
 
-export { createPost, fetchPosts, deletePost };
+export { createPost, updatePost, fetchPosts, getSinglePost, deletePost };
