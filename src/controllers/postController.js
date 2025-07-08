@@ -53,7 +53,7 @@ const updatePost = async (req, res) => {
       message: "post updated successfully",
     });
   } catch (error) {
-    console.log("🚀 ~ createPostController ~ error:", error);
+    console.log("🚀 ~ updatePost ~ error:", error);
     res.status(500).json({
       status: false,
       data: null,
