@@ -1,6 +1,8 @@
 import Post from "../models/postSchema.js";
+import User from "../models/userModel.js";
 
 const createPost = async (req, res) => {
+  console.log("🚀 ~ createPost ~ req:", req.id)
   try {
     const { title, description } = req.body;
 
@@ -16,7 +18,11 @@ const createPost = async (req, res) => {
       title,
       description,
     });
-
+    let user = await User.findOne({ _id: req?.id });
+    if (user) {
+      user.post.push(post._id);
+      await user.save();
+    }
     res.status(201).json({
       status: true,
       data: post,
@@ -35,7 +41,7 @@ const createPost = async (req, res) => {
 const updatePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    console.log("🚀 ~ updatePost ~ post:", post);
+    // console.log("🚀 ~ updatePost ~ post:", post);
     if (!post) {
       return res.status(404).json({
         status: false,

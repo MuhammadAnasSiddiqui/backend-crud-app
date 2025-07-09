@@ -46,8 +46,6 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    // console.log("🚀 ~ login ~ password:", password);
-    // console.log("🚀 ~ login ~ email:", email);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -67,7 +65,7 @@ const login = async (req, res) => {
     }
 
     const comparePassword = await bcrypt.compare(password, user.password);
-    console.log("🚀 ~ login ~ comparePassword:", comparePassword);
+    // console.log("🚀 ~ login ~ comparePassword:", comparePassword);
     if (!comparePassword) {
       return res.status(401).json({
         status: false,
