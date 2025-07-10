@@ -10,6 +10,10 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: [true, "Description is required"],
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );
