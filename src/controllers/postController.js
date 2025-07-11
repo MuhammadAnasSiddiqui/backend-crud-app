@@ -18,11 +18,6 @@ const createPost = async (req, res) => {
       description,
       userId: req.id,
     });
-    // let user = await User.findOne({ _id: req?.id });
-    // if (user) {
-    //   user.post.push(post._id);
-    //   await user.save();
-    // }
     res.status(201).json({
       status: true,
       data: post,
