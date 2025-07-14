@@ -9,6 +9,8 @@ import {
 } from "../controllers/postController.js";
 import verifyToken from "../middlewares/verifyToken.js";
 import upload from "../middlewares/multer.js";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
 const router = express.Router();
 // Auth routes
@@ -31,9 +33,16 @@ router.post("/upload", upload.single("file"), (req, res) => {
 
   // File upload successful
   const fileUrl = req.file.path; // URL of the uploaded file in Cloudinary
+  console.log("🚀 ~ router.post ~ fileUrl:", fileUrl);
+  // return;
+  cloudinary.uploader.upload(fileUrl, async (error, data) => {
+    console.log("🚀 ~ cloudinary.uploader.upload ~ error:", error);
+    if (data) {
+      console.log("🚀 ~ cloudinary.uploader.upload ~ data:", data);
+    }
+  });
 
-  // Perform any additional logic or save the file URL to a database
-
+  fs.unlinkSync(fileUrl);
   res.status(200).json({ success: true, fileUrl: fileUrl });
 });
 export default router;
