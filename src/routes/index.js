@@ -25,24 +25,33 @@ router.put("/update/:id", verifyToken, updatePost);
 router.delete("/delete/:id", verifyToken, deletePost);
 
 // file upload
-router.post("/upload", upload.single("file"), (req, res) => {
-  if (!req.file) {
-    // No file was uploaded
-    return res.status(400).json({ error: "No file uploaded" });
-  }
-
-  // File upload successful
-  const fileUrl = req.file.path; // URL of the uploaded file in Cloudinary
-  console.log("🚀 ~ router.post ~ fileUrl:", fileUrl);
-  // return;
-  cloudinary.uploader.upload(fileUrl, async (error, data) => {
-    console.log("🚀 ~ cloudinary.uploader.upload ~ error:", error);
-    if (data) {
-      console.log("🚀 ~ cloudinary.uploader.upload ~ data:", data);
+router.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
     }
-  });
 
-  fs.unlinkSync(fileUrl);
-  res.status(200).json({ success: true, fileUrl: fileUrl });
+    const filePath = req.file.path;
+    console.log("🚀 ~ filePath:", filePath);
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(filePath);
+    console.log("🚀 ~ result:", result);
+
+    // Delete local file
+    fs.unlinkSync(filePath);
+
+    // Return the Cloudinary URL
+    return res.status(200).json({
+      message: "File uploaded successfully",
+      url: result.secure_url,
+    });
+  } catch (error) {
+    console.log("🚀 ~ error:", error);
+    return res
+      .status(500)
+      .json({ error: "Upload failed", message: error.message });
+  }
 });
+
 export default router;

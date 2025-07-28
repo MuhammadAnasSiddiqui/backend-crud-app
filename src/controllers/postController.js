@@ -1,6 +1,8 @@
 import Post from "../models/postSchema.js";
 
 const createPost = async (req, res) => {
+  // console.log("🚀 ~ createPost ~ req:", req.file);
+  // return;
   console.log("🚀 ~ createPost ~ req:", req.id);
   try {
     const { title, description } = req.body;
