@@ -4,13 +4,13 @@ import {
   createPost,
   deletePost,
   fetchPosts,
+  getAllPosts,
   getSinglePost,
   updatePost,
 } from "../controllers/postController.js";
 import verifyToken from "../middlewares/verifyToken.js";
 import upload from "../middlewares/multer.js";
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
+import { cloudinaryUpload } from "../utils/index.js";
 
 const router = express.Router();
 // Auth routes
@@ -18,9 +18,10 @@ router.post("/register", register);
 router.post("/login", login);
 
 // Post routes
-router.get("/get-all-posts", verifyToken, fetchPosts);
+router.get("/get-all-posts", getAllPosts);
+router.get("/my-posts", verifyToken, fetchPosts);
 router.get("/posts/:id", verifyToken, getSinglePost);
-router.post("/create", verifyToken, createPost);
+router.post("/create", verifyToken, upload.single("file"), createPost);
 router.put("/update/:id", verifyToken, updatePost);
 router.delete("/delete/:id", verifyToken, deletePost);
 
@@ -35,11 +36,8 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     console.log("🚀 ~ filePath:", filePath);
 
     // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(filePath);
+    const result = await cloudinaryUpload(filePath);
     console.log("🚀 ~ result:", result);
-
-    // Delete local file
-    fs.unlinkSync(filePath);
 
     // Return the Cloudinary URL
     return res.status(200).json({

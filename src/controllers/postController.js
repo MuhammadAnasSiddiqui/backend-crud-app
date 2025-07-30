@@ -1,10 +1,22 @@
 import Post from "../models/postSchema.js";
+import { cloudinaryUpload } from "../utils/index.js";
 
 const createPost = async (req, res) => {
-  // console.log("🚀 ~ createPost ~ req:", req.file);
-  // return;
-  console.log("🚀 ~ createPost ~ req:", req.id);
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const filePath = req.file.path;
+    console.log("🚀 ~ filePath:", filePath);
+
+    // Upload to Cloudinary
+    const result = await cloudinaryUpload(filePath);
+    console.log("🚀 ~ result:", result);
+    if (!result) {
+      return res.status(500).json({ error: "Failed to upload image" });
+    }
+
     const { title, description } = req.body;
 
     if (!title || !description) {
@@ -18,6 +30,7 @@ const createPost = async (req, res) => {
     const post = await Post.create({
       title,
       description,
+      image: result.secure_url,
       userId: req.id,
     });
     res.status(201).json({
@@ -57,6 +70,25 @@ const updatePost = async (req, res) => {
     });
   } catch (error) {
     console.log("🚀 ~ updatePost ~ error:", error);
+    res.status(500).json({
+      status: false,
+      data: null,
+      message: error.message,
+    });
+  }
+};
+
+const getAllPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({});
+
+    res.status(200).json({
+      status: true,
+      data: posts,
+      message: "Fetch all posts",
+    });
+  } catch (error) {
+    console.log("🚀 ~ fetchPosts ~ error:", error);
     res.status(500).json({
       status: false,
       data: null,
@@ -140,4 +172,11 @@ const deletePost = async (req, res) => {
   }
 };
 
-export { createPost, updatePost, fetchPosts, getSinglePost, deletePost };
+export {
+  createPost,
+  updatePost,
+  fetchPosts,
+  getSinglePost,
+  deletePost,
+  getAllPosts,
+};
