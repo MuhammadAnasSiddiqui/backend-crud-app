@@ -11,6 +11,7 @@ import {
 import verifyToken from "../middlewares/verifyToken.js";
 import upload from "../middlewares/multer.js";
 import { cloudinaryUpload } from "../utils/index.js";
+import { createChat, getChats } from "../controllers/chatControllers.js";
 
 const router = express.Router();
 // Auth routes
@@ -24,6 +25,10 @@ router.get("/posts/:id", verifyToken, getSinglePost);
 router.post("/create", verifyToken, upload.single("file"), createPost);
 router.put("/update/:id", verifyToken, updatePost);
 router.delete("/delete/:id", verifyToken, deletePost);
+
+// chat routes
+router.post("/chat", verifyToken, createChat);
+router.get("/chats", verifyToken, getChats);
 
 // file upload
 router.post("/upload", upload.single("file"), async (req, res) => {
