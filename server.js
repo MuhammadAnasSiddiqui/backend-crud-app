@@ -4,11 +4,14 @@ import connectDb from "./src/config/db.js";
 import router from "./src/routes/index.js";
 import errorHandler from "./src/middlewares/errorHandler.js";
 import { v2 as cloudinary } from "cloudinary";
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 3002;
 dotenv.config();
 connectDb();
+
+app.use(cors());
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
