@@ -1,5 +1,9 @@
 import express from "express";
-import { login, register } from "../controllers/userController.js";
+import {
+  login,
+  register,
+  searchUserController,
+} from "../controllers/userController.js";
 import {
   createPost,
   deletePost,
@@ -11,7 +15,11 @@ import {
 import verifyToken from "../middlewares/verifyToken.js";
 import upload from "../middlewares/multer.js";
 import { cloudinaryUpload } from "../utils/index.js";
-import { createChat, getChats } from "../controllers/chatControllers.js";
+import {
+  getConversations,
+  getUserMessages,
+  sendMessage,
+} from "../controllers/chatControllers.js";
 
 const router = express.Router();
 // Auth routes
@@ -26,9 +34,12 @@ router.post("/create", verifyToken, upload.single("file"), createPost);
 router.put("/update/:id", verifyToken, updatePost);
 router.delete("/delete/:id", verifyToken, deletePost);
 
+router.get("/user", verifyToken, searchUserController);
+
 // chat routes
-router.post("/chat", verifyToken, createChat);
-router.get("/chats", verifyToken, getChats);
+router.post("/send-message", verifyToken, sendMessage);
+router.get("/user-messages", verifyToken, getUserMessages);
+router.get("/conversations", verifyToken, getConversations);
 
 // file upload
 router.post("/upload", upload.single("file"), async (req, res) => {

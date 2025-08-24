@@ -90,4 +90,31 @@ const login = async (req, res) => {
   }
 };
 
-export { register, login };
+const searchUserController = async (req, res) => {
+  try {
+    const keyword = req.query.search
+      ? [
+          { name: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ]
+      : [];
+
+    const users = await User.find({ $or: keyword }).find({
+      _id: { $ne: req.id },
+    });
+
+    res.status(200).json({
+      status: true,
+      data: users,
+      message: "search user",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      data: null,
+      message: error.message,
+    });
+  }
+};
+
+export { register, login, searchUserController };
