@@ -84,42 +84,68 @@ export const getUserMessages = async (req, res) => {
 
 export const getConversations = async (req, res) => {
   try {
-    const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({
-        status: false,
-        message: "userId is required",
-      });
-    }
-
-    const objectUserId = new mongoose.Types.ObjectId(userId);
+    const objectUserId = new mongoose.Types.ObjectId(req.id);
 
     const conversations = await ChatMessage.aggregate([
+      // 1) messages where current user is sender OR receiver
       {
         $match: {
           $or: [{ senderId: objectUserId }, { receiverId: objectUserId }],
         },
       },
+
+      // 2) compute "chatUser" = the other user's ObjectId for each message
       {
         $addFields: {
           chatUser: {
             $cond: [
-              { $eq: ["$senderId", objectUserId] },
-              "$receiverId",
-              "$senderId",
+              { $eq: ["$senderId", objectUserId] }, // if current user sent it
+              "$receiverId", // other is receiver
+              "$senderId", // otherwise other is sender
             ],
           },
         },
       },
+
+      // 3) newest message first so $first in group picks the latest
       { $sort: { createdAt: -1 } },
+
+      // 4) group by the other user and pick the first (latest) text + timestamp
       {
         $group: {
-          _id: "$chatUser",
-          lastMessage: { $first: "$text" },
-          timestamp: { $first: "$createdAt" },
+          _id: "$chatUser", // group key = other user's id
+          lastMessage: { $first: "$text" }, // text of the latest message in this conversation
+          timestamp: { $first: "$createdAt" }, // timestamp of that message
         },
       },
+
+      // 5) lookup user details (join users collection on _id)
+      {
+        $lookup: {
+          from: "users", // your users collection name
+          localField: "_id", // _id is the chatUser from grouping
+          foreignField: "_id",
+          as: "otherUser",
+        },
+      },
+
+      // 6) unwind so otherUser becomes an object (preserveNull if you want)
+      { $unwind: { path: "$otherUser", preserveNullAndEmptyArrays: true } },
+
+      // 7) shape the final output
+      {
+        $project: {
+          _id: 1, // the other user's id (chat partner)
+          lastMessage: 1,
+          timestamp: 1,
+          otherUser: {
+            _id: "$otherUser._id",
+            name: "$otherUser.name",
+          },
+        },
+      },
+
+      // 8) (optional) sort conversations by newest message
       { $sort: { timestamp: -1 } },
     ]);
 
